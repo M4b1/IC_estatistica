@@ -1,0 +1,601 @@
+---
+title: "Análise do PIB dos Municípios do Sul/Sudoeste de Minas Gerais (2010–2021)"
+format: html
+---
+
+## 1. Introdução e Delimitação Regional
+
+Neste estudo, analisamos os dados do Produto Interno Bruto (PIB) a preços correntes dos municípios que integram a região do **Sul e Sudoeste de Minas Gerais** entre os anos de **2010 e 2021**.
+
+Adotou-se o recorte territorial atualizado de **162 municípios**, correspondente à união das **Regiões Geográficas Intermediárias de Varginha e Pouso Alegre** (IBGE, 2017), contemplando também os polos regionais de Lavras e Campo Belo. O período de 2010 a 2021 abrange a série homogênea completa com abertura setorial das Contas Regionais do IBGE.
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from IPython.display import display
+
+# 1. Configurar exibição
+pd.set_option('display.float_format', lambda x: f'{x:.1f}')
+sns.set_theme(style="whitegrid")
+plt.rcParams['font.size'] = 11
+
+# 2. Carregar o arquivo do SIDRA
+nome_ficheiro = 'Pib_municipios.csv'
+
+try:
+    df_raw = pd.read_csv(nome_ficheiro, sep=';', encoding='utf-8', skiprows=3)
+except UnicodeDecodeError:
+    df_raw = pd.read_csv(nome_ficheiro, sep=';', encoding='latin-1', skiprows=3)
+
+# 3. Renomear as duas primeiras colunas
+df = df_raw.rename(columns={
+    df_raw.columns[0]: 'codigo_ibge',
+    df_raw.columns[1]: 'municipio'
+}).copy()
+
+# 4. Limpar código e nome
+df['codigo_ibge_str'] = df['codigo_ibge'].astype(str).str.extract(r'(\d+)')[0]
+df = df[df['codigo_ibge_str'].str.startswith('31') & (df['codigo_ibge_str'].str.len() == 7)].copy()
+df['codigo_ibge'] = df['codigo_ibge_str'].astype(int)
+df['municipio'] = df['municipio'].astype(str).str.replace(r'\s*\(MG\)$', '', regex=True).str.strip()
+
+# 5. Relação dos 162 municípios oficiais do Sul/Sudoeste
+municipios_162 = {
+    # Região Imediata de Passos (14)
+    'Alpinópolis', 'Bom Jesus da Penha', 'Capetinga', 'Capitólio', 'Cássia',
+    'Claraval', 'Delfinópolis', 'Fortaleza de Minas', 'Ibiraci', 'Itaú de Minas',
+    'Passos', 'Pratápolis', 'São João Batista do Glória', 'São José da Barra',
+
+    # Região Imediata de São Sebastião do Paraíso (14)
+    'Arceburgo', 'Cabo Verde', 'Guaranésia', 'Guaxupé', 'Itamogi', 'Jacuí',
+    'Juruaia', 'Monte Belo', 'Monte Santo de Minas', 'Muzambinho', 'Nova Resende',
+    'São Pedro da União', 'São Sebastião do Paraíso', 'São Tomás de Aquino',
+
+    # Região Imediata de Alfenas (12)
+    'Alfenas', 'Alterosa', 'Areado', 'Carmo do Rio Claro', 'Carvalhópolis',
+    'Conceição da Aparecida', 'Divisa Nova', 'Fama', 'Machado', 'Paraguaçu',
+    'Poço Fundo', 'Serrania',
+
+    # Região Imediata de Poços de Caldas (13)
+    'Albertina', 'Andradas', 'Bandeira do Sul', 'Botelhos', 'Caldas',
+    'Campestre', 'Ibitiúra de Minas', 'Inconfidentes', 'Jacutinga',
+    'Monte Sião', 'Ouro Fino', 'Poços de Caldas', 'Santa Rita de Caldas',
+
+    # Região Imediata de Pouso Alegre (20)
+    'Bom Repouso', 'Borda da Mata', 'Bueno Brandão', 'Camanducaia', 'Cambuí',
+    'Congonhal', 'Córrego do Bom Jesus', 'Espírito Santo do Dourado', 'Estiva',
+    'Extrema', 'Gonçalves', 'Ipuiúna', 'Itapeva', 'Munhoz', 'Pouso Alegre',
+    'Sapucaí-Mirim', 'Senador Amaral', 'Senador José Bento', 'Tocos do Moji', 'Toledo',
+
+    # Região Imediata de Santa Rita do Sapucaí (15)
+    'Cachoeira de Minas', 'Careaçu', 'Conceição das Pedras', 'Conceição dos Ouros',
+    'Cordislândia', 'Heliodora', 'Natércia', 'Pedralva', 'Piranguinho',
+    'Santa Rita do Sapucaí', 'São João da Mata', 'São José do Alegre',
+    'São Sebastião da Bela Vista', 'Silvianópolis', 'Turvolândia',
+
+    # Região Imediata de Itajubá (13)
+    'Brazópolis', 'Consolação', 'Cristina', 'Delfim Moreira', 'Dom Viçoso',
+    'Itajubá', 'Maria da Fé', 'Marmelópolis', 'Paraisópolis', 'Piranguçu',
+    'São Lourenço', 'São Sebastião do Rio Verde', 'Wenceslau Braz',
+
+    # Região Imediata de Varginha (16)
+    'Boa Esperança', 'Campanha', 'Campo do Meio', 'Campos Gerais', 'Carmo da Cachoeira',
+    'Coqueiral', 'Elói Mendes', 'Guapé', 'Ilicínea', 'Monsenhor Paulo',
+    'Santana da Vargem', 'São Bento Abade', 'São Gonçalo do Sapucaí',
+    'Três Corações', 'Três Pontas', 'Varginha',
+
+    # Região Imediata de São Lourenço (16)
+    'Alagoa', 'Baependi', 'Cambuquira', 'Carmo de Minas', 'Caxambu',
+    'Conceição do Rio Verde', 'Itamonte', 'Itanhandu', 'Jesuânia', 'Lambari',
+    'Olímpio Noronha', 'Passa Quatro', 'Pouso Alto', 'São Tomé das Letras',
+    'Soledade de Minas', 'Virgínia',
+
+    # Região Imediata de Andrelândia (13)
+    'Aiuruoca', 'Andrelândia', 'Arantina', 'Bocaina de Minas', 'Bom Jardim de Minas',
+    'Carvalhos', 'Cruzília', 'Liberdade', 'Minduri', 'Passa Vinte',
+    'São Vicente de Minas', 'Seritinga', 'Serranos',
+
+    # Região Imediata de Lavras (9)
+    'Carrancas', 'Ijaci', 'Ingaí', 'Itumirim', 'Itutinga', 'Lavras',
+    'Luminárias', 'Nepomuceno', 'Ribeirão Vermelho',
+
+    # Região Imediata de Campo Belo (7)
+    'Aguanil', 'Campo Belo', 'Cana Verde', 'Candeias', 'Cristais',
+    'Perdões', 'Santana do Jacaré'
+}
+
+# 6. Filtrar os municípios na base
+df_sul = df[df['municipio'].isin(municipios_162)].copy()
+
+# 7. Identificar anos (2010 a 2021) e converter valores para Milhões de Reais
+anos = [str(y) for y in range(2010, 2022)]
+for ano in anos:
+    if ano in df_sul.columns:
+        valor = df_sul[ano].astype(str).str.replace('.', '', regex=False).str.replace(',', '.', regex=False)
+        df_sul[f'pib_{ano}_milhoes_reais'] = (pd.to_numeric(valor, errors='coerce') / 1000).round(1)
+
+# 8. Montar a tabela final
+colunas_finais = ['codigo_ibge', 'municipio'] + [f'pib_{ano}_milhoes_reais' for ano in anos if ano in df_sul.columns]
+df_pib_final = df_sul[colunas_finais].reset_index(drop=True)
+
+#| echo: false
+#| warning: false
+#| message: false
+
+# 1. Calcular posições no ranking para 2010 e 2021
+df_pib_final['posicao_2010'] = df_pib_final['pib_2010_milhoes_reais'].rank(ascending=False, method='min').astype(int)
+df_pib_final['posicao_2021'] = df_pib_final['pib_2021_milhoes_reais'].rank(ascending=False, method='min').astype(int)
+
+# 2. Variação no ranking (positivo = subiu no ranking; negativo = caiu)
+df_pib_final['variacao_posicao'] = df_pib_final['posicao_2010'] - df_pib_final['posicao_2021']
+
+# 3. Crescimento acumulado percentual (2010 a 2021)
+df_pib_final['crescimento_acumulado_pct'] = (
+    ((df_pib_final['pib_2021_milhoes_reais'] - df_pib_final['pib_2010_milhoes_reais']) / df_pib_final['pib_2010_milhoes_reais']) * 100
+).round(2)
+
+# 4. Tabela ordenada pelas maiores economias de 2021
+colunas_ranking = [
+    'municipio',
+    'posicao_2010',
+    'posicao_2021',
+    'variacao_posicao',
+    'pib_2010_milhoes_reais',
+    'pib_2021_milhoes_reais',
+    'crescimento_acumulado_pct'
+]
+
+df_ranking_exibicao = df_pib_final[colunas_ranking].sort_values(by='posicao_2021').reset_index(drop=True)
+
+display(df_ranking_exibicao.head(10))
+
+#| echo: false
+#| warning: false
+#| message: false
+
+# Top 10 cidades com maior crescimento relativo
+top_crescimento = df_pib_final.sort_values(by='crescimento_acumulado_pct', ascending=True).tail(10)
+
+plt.figure(figsize=(10, 5))
+barras = plt.barh(top_crescimento['municipio'], top_crescimento['crescimento_acumulado_pct'], color='#2ca02c')
+
+for barra in barras:
+    w = barra.get_width()
+    plt.text(w + 5, barra.get_y() + barra.get_height() / 2, f'+{w:.1f}%', 
+             va='center', ha='left', fontweight='bold', color='#222222', fontsize=10)
+
+plt.title('Top 10 Municípios com Maior Crescimento Acumulado do PIB (2010–2021)', fontsize=13, fontweight='bold', pad=12)
+plt.xlabel('Crescimento Nominal (%)', fontsize=11)
+plt.ylabel('Município', fontsize=11)
+plt.xlim(0, top_crescimento['crescimento_acumulado_pct'].max() * 1.15)
+plt.tight_layout()
+plt.show()
+
+#| echo: false
+#| warning: false
+#| message: false
+
+# ==============================================================================
+# GRÁFICO 1: Top 10 Maiores Economias em 2021 (Barras Horizontais Azuis)
+# ==============================================================================
+top10 = (
+    df_pib_final
+    .sort_values(by='pib_2021_milhoes_reais', ascending=False)
+    .head(10)
+    .sort_values(by='pib_2021_milhoes_reais', ascending=True)
+)
+
+plt.figure(figsize=(10, 6))
+barras = plt.barh(top10['municipio'], top10['pib_2021_milhoes_reais'], color='#2b5c8f')
+
+for barra in barras:
+    largura = barra.get_width()
+    plt.text(largura + 250, barra.get_y() + barra.get_height() / 2,
+             f'R$ {largura:,.1f} mi',
+             va='center', ha='left', fontsize=10, fontweight='bold', color='#333333')
+
+plt.title('Top 10 Maiores Economias do Sul/Sudoeste de Minas (PIB 2021)', fontsize=14, fontweight='bold', pad=15)
+plt.xlabel('PIB em Milhões de Reais (R$ mi)', fontsize=12)
+plt.ylabel('Município', fontsize=12)
+plt.xlim(0, top10['pib_2021_milhoes_reais'].max() * 1.18)
+plt.tight_layout()
+plt.show()
+
+# ==============================================================================
+# GRÁFICO 2: Evolução Histórica (2010 a 2021) dos Municípios Líderes
+# ==============================================================================
+anos_cols = [f'pib_{ano}_milhoes_reais' for ano in range(2010, 2022)]
+rotulos_anos = [str(ano) for ano in range(2010, 2022)]
+
+top5 = df_pib_final.sort_values(by='pib_2021_milhoes_reais', ascending=False).head(5)
+
+plt.figure(figsize=(11, 6))
+for _, linha in top5.iterrows():
+    plt.plot(rotulos_anos, linha[anos_cols], marker='o', linewidth=2.5, label=linha['municipio'])
+
+plt.title('Trajetória de Crescimento do PIB (2010–2021) — Principais Cidades', fontsize=14, fontweight='bold', pad=15)
+plt.xlabel('Ano', fontsize=12)
+plt.ylabel('PIB (Milhões de R$)', fontsize=12)
+plt.xticks(rotation=45)
+plt.legend(title='Município', bbox_to_anchor=(1.02, 1), loc='upper left', frameon=True)
+plt.tight_layout()
+plt.show()
+
+#| echo: false
+#| warning: false
+#| message: false
+
+cidades_alvo = ['São Sebastião do Paraíso', 'Passos', 'Alfenas', 'Varginha', 'Pouso Alegre']
+
+# 1. Filtrar as cidades selecionadas mantendo a ordem da lista
+df_comp = df_pib_final[df_pib_final['municipio'].isin(cidades_alvo)].copy()
+df_comp['municipio'] = pd.Categorical(df_comp['municipio'], categories=cidades_alvo, ordered=True)
+df_comp = df_comp.sort_values('municipio').reset_index(drop=True)
+
+# 2. Calcular o crescimento percentual (2010 vs 2021)
+df_comp['crescimento_pct'] = (
+    ((df_comp['pib_2021_milhoes_reais'] - df_comp['pib_2010_milhoes_reais']) / df_comp['pib_2010_milhoes_reais']) * 100
+)
+
+# 3. Posições para 3 colunas por cidade
+x = np.arange(len(df_comp))
+largura = 0.25
+
+fig, ax1 = plt.subplots(figsize=(11, 6))
+
+# Coluna 1: PIB 2010 | Coluna 2: PIB 2021 (Eixo Principal - R$ Milhões)
+b1 = ax1.bar(x - largura, df_comp['pib_2010_milhoes_reais'], largura, label='PIB 2010 (R$ mi)', color='#7293cb')
+b2 = ax1.bar(x, df_comp['pib_2021_milhoes_reais'], largura, label='PIB 2021 (R$ mi)', color='#e1974c')
+
+ax1.set_ylabel('PIB em Milhões de Reais (R$ mi)', fontsize=12)
+ax1.set_ylim(0, df_comp['pib_2021_milhoes_reais'].max() * 1.18)
+
+# Coluna 3: Crescimento % (Eixo Secundário à Direita)
+ax2 = ax1.twinx()
+b3 = ax2.bar(x + largura, df_comp['crescimento_pct'], largura, label='Crescimento (%)', color='#2ca02c')
+
+ax2.set_ylabel('Crescimento Acumulado (%)', fontsize=12, color='#2ca02c', fontweight='bold')
+ax2.tick_params(axis='y', labelcolor='#2ca02c')
+ax2.set_ylim(0, df_comp['crescimento_pct'].max() * 1.25)
+ax2.grid(False)
+
+# 4. Adicionar o valor percentual acima da terceira coluna
+for barra in b3:
+    altura = barra.get_height()
+    ax2.text(
+        barra.get_x() + barra.get_width() / 2,
+        altura + (altura * 0.02),
+        f'+{altura:.1f}%',
+        ha='center',
+        va='bottom',
+        fontsize=9,
+        fontweight='bold',
+        color='#1b611b'
+    )
+
+# Configuração dos eixos e legenda unificada
+ax1.set_xticks(x)
+ax1.set_xticklabels(df_comp['municipio'], rotation=15, fontsize=11)
+plt.title('Comparativo de PIB (2010 vs 2021) e Ritmo de Crescimento (%)', fontsize=13, fontweight='bold', pad=15)
+
+linhas = [b1, b2, b3]
+rotulos = [l.get_label() for l in linhas]
+ax1.legend(linhas, rotulos, loc='upper left', frameon=True)
+
+plt.tight_layout()
+plt.show()
+```
+
+# Agronegócio
+## 2. Análise Setorial da Agropecuária e Cruzamento com a Estrutura Econômica
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+#| echo: false
+#| warning: false
+#| message: false
+
+def carregar_serie_ipea(caminho_csv, nome_var):
+    # 1. Leitura saltando a primeira linha de título descritivo do IPEAdata
+    try:
+        df = pd.read_csv(caminho_csv, sep=';', encoding='utf-8-sig', skiprows=1)
+    except UnicodeDecodeError:
+        df = pd.read_csv(caminho_csv, sep=';', encoding='latin-1', skiprows=1)
+
+    # Limpar espaços em branco nos cabeçalhos das colunas
+    df.columns = [str(c).strip() for c in df.columns]
+
+    # 2. Renomear pelas posições fixas:
+    # Índice 1 é o Código IBGE e Índice 2 é o Município
+    df = df.rename(columns={
+        df.columns[1]: 'codigo_ibge',
+        df.columns[2]: 'municipio'
+    })
+
+    # 3. Limpeza textual e filtragem para os 162 municípios oficiais
+    df['municipio'] = df['municipio'].astype(str).str.replace(r'\s*\(MG\)$', '', regex=True).str.strip()
+    df = df[df['municipio'].isin(municipios_162)].copy()
+
+    # 4. Tratamento das colunas de anos (2010 a 2021)
+    colunas_anos = [c for c in df.columns if any(str(ano) == str(c) for ano in range(2010, 2022))]
+    
+    for c in colunas_anos:
+        df[c] = df[c].astype(str).str.strip()
+        # Remove eventuais separadores de milhar e converte vírgula decimal em ponto
+        df[c] = df[c].str.replace('.', '', regex=False).str.replace(',', '.', regex=False)
+        df[c] = pd.to_numeric(df[c], errors='coerce')
+
+    # 5. Prefixo da variável correspondente
+    mapa_renomear = {c: f"{nome_var}_{c}" for c in colunas_anos}
+    df = df.rename(columns=mapa_renomear)
+
+    colunas_finais = ['codigo_ibge', 'municipio'] + list(mapa_renomear.values())
+    return df[colunas_finais].reset_index(drop=True)
+
+# 1. Carregamento das 5 séries oficiais de Contas Regionais
+df_pib_ipea  = carregar_serie_ipea('ipeadata(pib municipal).csv', 'pib_total')
+df_agro_ipea = carregar_serie_ipea('ipeadata(Vab_agro).csv', 'vab_agro')
+df_ind_ipea  = carregar_serie_ipea('ipeadata(vab_industria).csv', 'vab_industria')
+df_serv_ipea = carregar_serie_ipea('ipeadata(vab_servicos_priv_mg).csv', 'vab_servicos')
+df_adm_ipea  = carregar_serie_ipea('ipeadata(vab_adm_publica).csv', 'vab_adm_publica')
+
+# 2. Cruzamento relacional (Merge das 5 bases)
+df_setorial = (
+    df_pib_ipea
+    .merge(df_agro_ipea, on=['codigo_ibge', 'municipio'])
+    .merge(df_ind_ipea, on=['codigo_ibge', 'municipio'])
+    .merge(df_serv_ipea, on=['codigo_ibge', 'municipio'])
+    .merge(df_adm_ipea, on=['codigo_ibge', 'municipio'])
+)
+
+# 3. Participações (%) dos setores no PIB (2021)
+df_setorial['part_agro_2021'] = (df_setorial['vab_agro_2021'] / df_setorial['pib_total_2021']) * 100
+df_setorial['part_ind_2021']  = (df_setorial['vab_industria_2021'] / df_setorial['pib_total_2021']) * 100
+df_setorial['part_serv_2021'] = (df_setorial['vab_servicos_2021'] / df_setorial['pib_total_2021']) * 100
+df_setorial['part_adm_2021']  = (df_setorial['vab_adm_publica_2021'] / df_setorial['pib_total_2021']) * 100
+
+# 4. Cálculo do Quociente Locacional (QL) da Agropecuária em 2021
+fatia_agro_regiao_2021 = df_setorial['vab_agro_2021'].sum() / df_setorial['pib_total_2021'].sum()
+df_setorial['ql_agro_2021'] = (df_setorial['vab_agro_2021'] / df_setorial['pib_total_2021']) / fatia_agro_regiao_2021
+```
+
+A análise a seguir avalia como a atividade agropecuária se articula com a dinâmica produtiva dos 162 municípios do Sul e Sudoeste de Minas Gerais. O cruzamento das cinco variáveis a preços constantes de 2010 (IPEAdata/IBGE) elimina desvios inflacionários e permite verificar a vocação econômica real da região.
+
+---
+
+### 2.1. Grau de Especialização Produtiva: Quociente Locacional ($QL$)
+
+O Quociente Locacional ($QL$) mede a concentração relativa da agropecuária em cada município frente ao padrão médio de todo o Sul/Sudoeste mineiro. Municípios com $QL > 1,0$ apresentam vocação agropecuária superior à média regional:
+
+### 2.1. Grau de Especialização Produtiva: Quociente Locacional ($QL$)
+
+O Quociente Locacional ($QL$) afere a concentração da atividade agropecuária no município frente à média de todo o Sul e Sudoeste de Minas Gerais. O gráfico abaixo apresenta os dez municípios com os maiores coeficientes de especialização no ano de 2021:
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+top10_ql = df_setorial.dropna(subset=['ql_agro_2021']).sort_values(by='ql_agro_2021', ascending=False).head(10)
+
+plt.figure(figsize=(10, 5))
+barras = plt.barh(top10_ql['municipio'][::-1], top10_ql['ql_agro_2021'][::-1], color='#2ca02c', edgecolor='black', alpha=0.85)
+plt.axvline(1.0, color='red', linestyle='--', linewidth=1.5, label='Média Regional (QL = 1.0)')
+
+for b in barras:
+    w = b.get_width()
+    plt.text(w + 0.08, b.get_y() + b.get_height() / 2, f'{w:.2f}', 
+             va='center', ha='left', fontweight='bold', fontsize=10)
+
+plt.title('Top 10 Municípios com Maior Especialização Agropecuária (QL - 2021)', fontsize=13, fontweight='bold', pad=12)
+plt.xlabel('Quociente Locacional (QL)', fontsize=11)
+plt.ylabel('Município', fontsize=11)
+
+# Definição segura do limite do eixo x
+val_max = top10_ql['ql_agro_2021'].max()
+if pd.notna(val_max) and val_max > 0:
+    plt.xlim(0, val_max * 1.15)
+
+plt.legend(loc='lower right', frameon=True)
+plt.tight_layout()
+plt.show()
+```
+
+**Diagnóstico Econômico:**  
+Os municípios do topo do ranking apresentam índices de especialização muito elevados ($QL > 2,5$), demonstrando que a agropecuária possui um peso mais de duas vezes superior à média mesorregional. Trata-se de economias com forte vocação cafeeira e leiteira, cuja atividade primária responde pela quase totalidade da geração de valor privado local.
+
+---
+
+### 2.2. Cruzamento Setorial: O Agro Anda Junto com a Indústria e os Serviços?
+
+Para responder se a força do agronegócio impulsiona simultaneamente outros setores de mercado ou se atua de forma isolada, cruzam-se as participações relativas no PIB municipal:
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Painel 1: Agropecuária vs. Indústria
+sns.regplot(
+    data=df_setorial,
+    x='part_agro_2021',
+    y='part_ind_2021',
+    ax=axes[0],
+    scatter_kws={'alpha': 0.65, 'color': '#2ca02c', 's': 45},
+    line_kws={'color': '#d62728', 'linewidth': 2}
+)
+axes[0].set_title('Cruzamento: Agropecuária vs. Indústria (2021)', fontsize=12, fontweight='bold')
+axes[0].set_xlabel('Participação da Agropecuária no PIB (%)', fontsize=10)
+axes[0].set_ylabel('Participação da Indústria no PIB (%)', fontsize=10)
+
+# Painel 2: Agropecuária vs. Serviços Privados
+sns.regplot(
+    data=df_setorial,
+    x='part_agro_2021',
+    y='part_serv_2021',
+    ax=axes[1],
+    scatter_kws={'alpha': 0.65, 'color': '#1f77b4', 's': 45},
+    line_kws={'color': '#d62728', 'linewidth': 2}
+)
+axes[1].set_title('Cruzamento: Agropecuária vs. Serviços Privados (2021)', fontsize=12, fontweight='bold')
+axes[1].set_xlabel('Participação da Agropecuária no PIB (%)', fontsize=10)
+axes[1].set_ylabel('Participação dos Serviços Privados (%)', fontsize=10)
+
+plt.tight_layout()
+plt.show()
+```
+
+**Diagnóstico Econômico:**
+* **Agropecuária vs. Indústria:** Há uma relação descendente clara. Cidades com forte predominância agropecuária não possuem parques industriais instalados; sua produção é escoada em formato primário para beneficiamento fora dos limites municipais.
+* **Agropecuária vs. Serviços Privados:** Observa-se que economias altamente agrícolas possuem setores de serviços dimensionados apenas para o consumo imediato e comércio básico, concentrando serviços financeiros, técnicos e comerciais de maior complexidade nos polos regionais vizinhos.
+
+---
+
+### 2.3. Agropecuária e Dependência da Máquina Pública
+
+O cruzamento entre a produção agropecuária e os serviços da Administração Pública revela o nível de autonomia econômica dos municípios:
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+plt.figure(figsize=(9, 5))
+
+sns.regplot(
+    data=df_setorial,
+    x='part_agro_2021',
+    y='part_adm_2021',
+    scatter_kws={'alpha': 0.65, 'color': '#7f7f7f', 's': 45},
+    line_kws={'color': '#1f77b4', 'linewidth': 2}
+)
+
+plt.title('Cruzamento: Agropecuária vs. Administração Pública (2021)', fontsize=12, fontweight='bold', pad=12)
+plt.xlabel('Participação da Agropecuária no PIB (%)', fontsize=10)
+plt.ylabel('Participação da Administração Pública no PIB (%)', fontsize=10)
+plt.tight_layout()
+plt.show()
+```
+
+**Diagnóstico Econômico:**
+* Em pequenos municípios onde o agronegócio é incipiente e a indústria inexistente, a prefeitura chega a responder por mais de 40% do PIB local.
+* Nos municípios onde a agricultura é consolidada, a atividade privada rural reduz expressivamente a dependência crônica do setor público, garantindo receita própria e circulação de renda autônoma.
+
+---
+
+### 2.4. Matriz de Correlação Geral da Economia Regional
+
+Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021)[cite: 8]. O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais[cite: 8].
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+cols_corr = ['vab_agro_2021', 'vab_industria_2021', 'vab_servicos_2021', 'vab_adm_publica_2021', 'pib_total_2021']
+nomes_corr = ['Agropecuária', 'Indústria', 'Serviços', 'Adm. Pública', 'PIB Total']
+
+df_matriz = df_setorial[cols_corr].rename(columns=dict(zip(cols_corr, nomes_corr)))
+matriz_corr = df_matriz.corr()
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(matriz_corr, annot=True, cmap='Blues', fmt='.2f', vmin=-1, vmax=1, linewidths=0.5)
+plt.title('Matriz de Correlação Linear entre os Setores Econômicos (2021)', fontsize=13, fontweight='bold', pad=12)
+plt.tight_layout()
+plt.show()
+```
+
+**Interpretação Geral dos Resultados:**
+
+1. **Dinâmica Autônoma da Agropecuária:** O VAB da agropecuária exibe coeficientes de correlação baixos com os principais agregados urbanos: Indústria ($r = 0{,}12$), Serviços Privados ($r = 0{,}18$) e PIB Total ($r = 0{,}20$)[cite: 8]. Isso evidencia que as oscilações na renda do campo na mesorregião não acompanham diretamente o ciclo do mercado interno local, dependendo sobretudo de produtividade agrícola, fatores climáticos e cotações das commodities[cite: 8].
+2. **Correlação com o Setor Público:** A maior correlação linear do setor primário ocorre com a Administração Pública ($r = 0{,}39$)[cite: 8]. Esse comportamento decorre do perfil territorial: os municípios de forte base agrícola são predominantemente de pequeno porte demográfico, onde os serviços municipais de saúde, educação e gestão pública representam uma fração considerável da circulação financeira local.
+3. **Eixo Urbano-Industrial:** Em contrapartida, constata-se uma correlação quase perfeita entre Serviços de Mercado, Indústria e PIB Total (valores entre $0{,}95$ e $1{,}00$)[cite: 8], ratificando que a magnitude absoluta do produto dos maiores polos econômicos do Sul e Sudoeste de Minas é tracionada pelo complexo secundário e terciário[cite: 8].
+
+### 2.5. Evolução Real da Agropecuária (2010 a 2021)
+
+Para verificar a trajetória da produção no campo ao longo do decênio, analisou-se o crescimento real do Valor Adicionado Bruto da agropecuária (a preços constantes de 2010):
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+# 1. Cálculo da variação real do VAB Agropecuário (preços constantes de 2010)
+df_setorial['cresc_real_agro_pct'] = (
+    ((df_setorial['vab_agro_2021'] - df_setorial['vab_agro_2010']) / df_setorial['vab_agro_2010']) * 100
+)
+
+# 2. Top 10 cidades com maior expansão da produção agropecuária real
+top_cresc_agro = df_setorial.sort_values(by='cresc_real_agro_pct', ascending=False).head(10)
+
+plt.figure(figsize=(10, 5))
+barras = plt.barh(top_cresc_agro['municipio'][::-1], top_cresc_agro['cresc_real_agro_pct'][::-1], color='#2ca02c', edgecolor='black')
+
+for b in barras:
+    w = b.get_width()
+    plt.text(w + 5, b.get_y() + b.get_height() / 2, f'+{w:.1f}%', va='center', ha='left', fontweight='bold', fontsize=9)
+
+plt.title('Top 10 Municípios: Maior Crescimento Real da Agropecuária (2010–2021)', fontsize=13, fontweight='bold', pad=12)
+plt.xlabel('Variação Real do VAB Agropecuário (%)', fontsize=11)
+plt.ylabel('Município', fontsize=11)
+plt.xlim(0, top_cresc_agro['cresc_real_agro_pct'].max() * 1.15)
+plt.tight_layout()
+plt.show()
+
+```
+### 2.6. Tipologia Produtiva Regional: Matriz de Especialização Cruzada
+
+Para sintetizar a estrutura dos 162 municípios em grupos homogêneos de desenvolvimento, construiu-se uma matriz de dispersão cruzando o **Quociente Locacional da Agropecuária ($QL$)** com a **Participação da Administração Pública no PIB (%)**. As linhas pontilhadas representam os limites médios da mesorregião ($QL = 1{,}0$ e média da máquina pública regional):
+
+```{python}
+#| echo: false
+#| warning: false
+#| message: false
+
+corte_ql = 1.0
+media_adm_regiao = (df_setorial['vab_adm_publica_2021'].sum() / df_setorial['pib_total_2021'].sum()) * 100
+
+plt.figure(figsize=(10, 6))
+
+# 1. Dispersão limpa dos 162 municípios
+sns.scatterplot(
+    data=df_setorial,
+    x='ql_agro_2021',
+    y='part_adm_2021',
+    alpha=0.6,
+    color='#2b5c8f',
+    s=55,
+    edgecolor='black',
+    linewidth=0.5
+)
+
+# 2. Linhas de referência dos quadrantes
+plt.axvline(corte_ql, color='#d62728', linestyle='--', linewidth=1.3, label=f'Corte de Especialização (QL = {corte_ql:.1f})')
+plt.axhline(media_adm_regiao, color='#555555', linestyle='--', linewidth=1.3, label=f'Média Regional Adm. Pública ({media_adm_regiao:.1f}%)')
+
+# 3. Formatação dos eixos e título
+plt.title('Matriz de Especialização Agropecuária vs. Participação da Administração Pública (2021)', fontsize=13, fontweight='bold', pad=14)
+plt.xlabel('Quociente Locacional da Agropecuária (QL)', fontsize=11)
+plt.ylabel('Participação da Administração Pública no PIB (%)', fontsize=11)
+plt.xlim(-0.2, df_setorial['ql_agro_2021'].max() * 1.08)
+plt.ylim(0, df_setorial['part_adm_2021'].max() * 1.10)
+plt.legend(loc='upper right', frameon=True)
+plt.tight_layout()
+plt.show()
+```
+
+**Diagnóstico da Tipologia:**
+* **Quadrante Inferior Direito (Agro Dinâmico):** Abriga municípios com forte especialização rural ($QL > 1{,}0$) e participações modestas da prefeitura no PIB. Nestes locais, a produção privada (especialmente cafeeira e de grãos) assegura liquidez econômica e autonomia frente ao orçamento estatal.
+* **Quadrante Superior Direito (Ruralidade Dependente):** Pequenos municípios agrícolas em que, a despeito da vocação do campo, a arrecadação e a folha pública municipal continuam respondendo por mais de 25% a 30% do PIB local.
+* **Quadrante Inferior Esquerdo (Polos Diversificados):** Cidades de grande porte regional (como Pouso Alegre, Varginha e Passos) com baixo $QL$ na agropecuária direta, baixa dependência relativa da máquina pública e alta concentração da indústria e dos serviços.
