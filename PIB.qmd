@@ -292,7 +292,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-# Agronegócio
+# Especialização Produtiva e Dinâmica do Agronegócio Regional
 ## 2. Análise Setorial da Agropecuária e Cruzamento com a Estrutura Econômica
 
 ```{python}
