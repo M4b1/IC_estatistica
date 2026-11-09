@@ -464,7 +464,7 @@ plt.show()
 
 ### 2.3. Matriz de Correlação Geral da Economia Regional
 
-Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021)[cite: 8]. O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais[cite: 8].
+Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021). O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais.
 
 ```{python}
 #| echo: false
