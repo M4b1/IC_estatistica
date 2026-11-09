@@ -486,9 +486,9 @@ plt.show()
 
 **Interpretação Geral dos Resultados:**
 
-1. **Dinâmica Autônoma da Agropecuária:** O VAB da agropecuária exibe coeficientes de correlação baixos com os principais agregados urbanos: Indústria ($r = 0{,}12$), Serviços Privados ($r = 0{,}18$) e PIB Total ($r = 0{,}20$)[cite: 8]. Isso evidencia que as oscilações na renda do campo na mesorregião não acompanham diretamente o ciclo do mercado interno local, dependendo sobretudo de produtividade agrícola, fatores climáticos e cotações das commodities[cite: 8].
-2. **Correlação com o Setor Público:** A maior correlação linear do setor primário ocorre com a Administração Pública ($r = 0{,}39$)[cite: 8]. Esse comportamento decorre do perfil territorial: os municípios de forte base agrícola são predominantemente de pequeno porte demográfico, onde os serviços municipais de saúde, educação e gestão pública representam uma fração considerável da circulação financeira local.
-3. **Eixo Urbano-Industrial:** Em contrapartida, constata-se uma correlação quase perfeita entre Serviços de Mercado, Indústria e PIB Total (valores entre $0{,}95$ e $1{,}00$)[cite: 8], ratificando que a magnitude absoluta do produto dos maiores polos econômicos do Sul e Sudoeste de Minas é tracionada pelo complexo secundário e terciário[cite: 8].
+1. **Dinâmica Autônoma da Agropecuária:** O VAB da agropecuária exibe coeficientes de correlação baixos com os principais agregados urbanos: Indústria ($r = 0{,}12$), Serviços Privados ($r = 0{,}18$) e PIB Total ($r = 0{,}20$). Isso evidencia que as oscilações na renda do campo na mesorregião não acompanham diretamente o ciclo do mercado interno local, dependendo sobretudo de produtividade agrícola, fatores climáticos e cotações das commodities.
+2. **Correlação com o Setor Público:** A maior correlação linear do setor primário ocorre com a Administração Pública ($r = 0{,}39$). Esse comportamento decorre do perfil territorial: os municípios de forte base agrícola são predominantemente de pequeno porte demográfico, onde os serviços municipais de saúde, educação e gestão pública representam uma fração considerável da circulação financeira local.
+3. **Eixo Urbano-Industrial:** Em contrapartida, constata-se uma correlação quase perfeita entre Serviços de Mercado, Indústria e PIB Total (valores entre $0{,}95$ e $1{,}00$)[cite: 8], ratificando que a magnitude absoluta do produto dos maiores polos econômicos do Sul e Sudoeste de Minas é tracionada pelo complexo secundário e terciário.
 
 ### 2.4. Evolução Real da Agropecuária (2010 a 2021)
 
