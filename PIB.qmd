@@ -462,39 +462,7 @@ plt.show()
 
 ---
 
-### 2.3. Agropecuária e Dependência da Máquina Pública
-
-O cruzamento entre a produção agropecuária e os serviços da Administração Pública revela o nível de autonomia econômica dos municípios:
-
-```{python}
-#| echo: false
-#| warning: false
-#| message: false
-
-plt.figure(figsize=(9, 5))
-
-sns.regplot(
-    data=df_setorial,
-    x='part_agro_2021',
-    y='part_adm_2021',
-    scatter_kws={'alpha': 0.65, 'color': '#7f7f7f', 's': 45},
-    line_kws={'color': '#1f77b4', 'linewidth': 2}
-)
-
-plt.title('Cruzamento: Agropecuária vs. Administração Pública (2021)', fontsize=12, fontweight='bold', pad=12)
-plt.xlabel('Participação da Agropecuária no PIB (%)', fontsize=10)
-plt.ylabel('Participação da Administração Pública no PIB (%)', fontsize=10)
-plt.tight_layout()
-plt.show()
-```
-
-**Diagnóstico Econômico:**
-* Em pequenos municípios onde o agronegócio é incipiente e a indústria inexistente, a prefeitura chega a responder por mais de 40% do PIB local.
-* Nos municípios onde a agricultura é consolidada, a atividade privada rural reduz expressivamente a dependência crônica do setor público, garantindo receita própria e circulação de renda autônoma.
-
----
-
-### 2.4. Matriz de Correlação Geral da Economia Regional
+### 2.3. Matriz de Correlação Geral da Economia Regional
 
 Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021)[cite: 8]. O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais[cite: 8].
 
@@ -522,7 +490,7 @@ plt.show()
 2. **Correlação com o Setor Público:** A maior correlação linear do setor primário ocorre com a Administração Pública ($r = 0{,}39$)[cite: 8]. Esse comportamento decorre do perfil territorial: os municípios de forte base agrícola são predominantemente de pequeno porte demográfico, onde os serviços municipais de saúde, educação e gestão pública representam uma fração considerável da circulação financeira local.
 3. **Eixo Urbano-Industrial:** Em contrapartida, constata-se uma correlação quase perfeita entre Serviços de Mercado, Indústria e PIB Total (valores entre $0{,}95$ e $1{,}00$)[cite: 8], ratificando que a magnitude absoluta do produto dos maiores polos econômicos do Sul e Sudoeste de Minas é tracionada pelo complexo secundário e terciário[cite: 8].
 
-### 2.5. Evolução Real da Agropecuária (2010 a 2021)
+### 2.4. Evolução Real da Agropecuária (2010 a 2021)
 
 Para verificar a trajetória da produção no campo ao longo do decênio, analisou-se o crescimento real do Valor Adicionado Bruto da agropecuária (a preços constantes de 2010):
 
@@ -554,7 +522,7 @@ plt.tight_layout()
 plt.show()
 
 ```
-### 2.6. Tipologia Produtiva Regional: Matriz de Especialização Cruzada
+### 2.5. Tipologia Produtiva Regional: Matriz de Especialização Cruzada
 
 Para sintetizar a estrutura dos 162 municípios em grupos homogêneos de desenvolvimento, construiu-se uma matriz de dispersão cruzando o **Quociente Locacional da Agropecuária ($QL$)** com a **Participação da Administração Pública no PIB (%)**. As linhas pontilhadas representam os limites médios da mesorregião ($QL = 1{,}0$ e média da máquina pública regional):
 
