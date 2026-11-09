@@ -15,7 +15,7 @@
         "\n",
         "Adotou-se o recorte territorial atualizado de **162 municípios**, correspondente à união das **Regiões Geográficas Intermediárias de Varginha e Pouso Alegre** (IBGE, 2017), contemplando também os polos regionais de Lavras e Campo Belo. O período de 2010 a 2021 abrange a série homogênea completa com abertura setorial das Contas Regionais do IBGE."
       ],
-      "id": "c39ef909"
+      "id": "08c492cf"
     },
     {
       "cell_type": "code",
@@ -303,7 +303,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "dab0f463",
+      "id": "08097a6b",
       "execution_count": null,
       "outputs": []
     },
@@ -314,7 +314,7 @@
         "# Especialização Produtiva e Dinâmica do Agronegócio Regional\n",
         "## 2. Análise Setorial da Agropecuária e Cruzamento com a Estrutura Econômica"
       ],
-      "id": "f10b9faf"
+      "id": "f0305e37"
     },
     {
       "cell_type": "code",
@@ -392,7 +392,7 @@
         "fatia_agro_regiao_2021 = df_setorial['vab_agro_2021'].sum() / df_setorial['pib_total_2021'].sum()\n",
         "df_setorial['ql_agro_2021'] = (df_setorial['vab_agro_2021'] / df_setorial['pib_total_2021']) / fatia_agro_regiao_2021"
       ],
-      "id": "5c7bfd1d",
+      "id": "9035d7e1",
       "execution_count": null,
       "outputs": []
     },
@@ -412,7 +412,7 @@
         "\n",
         "O Quociente Locacional ($QL$) afere a concentração da atividade agropecuária no município frente à média de todo o Sul e Sudoeste de Minas Gerais. O gráfico abaixo apresenta os dez municípios com os maiores coeficientes de especialização no ano de 2021:"
       ],
-      "id": "f8595c11"
+      "id": "46abfd8e"
     },
     {
       "cell_type": "code",
@@ -447,7 +447,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "1bedc16f",
+      "id": "ea053d8a",
       "execution_count": null,
       "outputs": []
     },
@@ -464,7 +464,7 @@
         "\n",
         "Para responder se a força do agronegócio impulsiona simultaneamente outros setores de mercado ou se atua de forma isolada, cruzam-se as participações relativas no PIB municipal:"
       ],
-      "id": "5ef718e9"
+      "id": "b31b9de3"
     },
     {
       "cell_type": "code",
@@ -506,7 +506,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "cea5210e",
+      "id": "2b92f58c",
       "execution_count": null,
       "outputs": []
     },
@@ -522,9 +522,9 @@
         "\n",
         "### 2.3. Matriz de Correlação Geral da Economia Regional\n",
         "\n",
-        "Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021)[cite: 8]. O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais[cite: 8]."
+        "Para sintetizar de forma estatística a interdependência entre os setores de atividade econômica, calculou-se a matriz de correlação linear de Pearson entre as cinco variáveis consolidadas no encerramento da série temporal (2021). O objetivo é averiguar em que medida a expansão do agronegócio caminha associada ou descolada do desempenho dos demais setores municipais."
       ],
-      "id": "7950ef79"
+      "id": "9a1c35c6"
     },
     {
       "cell_type": "code",
@@ -547,7 +547,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "464861e3",
+      "id": "9dc68ef9",
       "execution_count": null,
       "outputs": []
     },
@@ -565,7 +565,7 @@
         "\n",
         "Para verificar a trajetória da produção no campo ao longo do decênio, analisou-se o crescimento real do Valor Adicionado Bruto da agropecuária (a preços constantes de 2010):"
       ],
-      "id": "0df1e21f"
+      "id": "26ede3a4"
     },
     {
       "cell_type": "code",
@@ -598,7 +598,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "ac50fc8b",
+      "id": "d25730cb",
       "execution_count": null,
       "outputs": []
     },
@@ -610,7 +610,7 @@
         "\n",
         "Para sintetizar a estrutura dos 162 municípios em grupos homogêneos de desenvolvimento, construiu-se uma matriz de dispersão cruzando o **Quociente Locacional da Agropecuária ($QL$)** com a **Participação da Administração Pública no PIB (%)**. As linhas pontilhadas representam os limites médios da mesorregião ($QL = 1{,}0$ e média da máquina pública regional):"
       ],
-      "id": "ada2527a"
+      "id": "0c60d0f0"
     },
     {
       "cell_type": "code",
@@ -652,7 +652,7 @@
         "plt.tight_layout()\n",
         "plt.show()"
       ],
-      "id": "10f8a072",
+      "id": "77478d5e",
       "execution_count": null,
       "outputs": []
     },
@@ -665,7 +665,7 @@
         "* **Quadrante Superior Direito (Ruralidade Dependente):** Pequenos municípios agrícolas em que, a despeito da vocação do campo, a arrecadação e a folha pública municipal continuam respondendo por mais de 25% a 30% do PIB local.\n",
         "* **Quadrante Inferior Esquerdo (Polos Diversificados):** Cidades de grande porte regional (como Pouso Alegre, Varginha e Passos) com baixo $QL$ na agropecuária direta, baixa dependência relativa da máquina pública e alta concentração da indústria e dos serviços."
       ],
-      "id": "04469003"
+      "id": "5fa42634"
     }
   ],
   "metadata": {
